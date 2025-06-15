@@ -1,2 +1,3 @@
 # Ignore service account keys
 src/resources/serviceAccountKey.json
+target/
