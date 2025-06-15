@@ -1,0 +1,33 @@
+name: Build and Upload JAR to GCP
+
+on:
+  push:
+    branches:
+      - main   # or your branch name
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - name: Build with Maven
+      run: mvn clean package
+
+    - name: Upload JAR to GCP bucket
+      env:
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        BUCKET_NAME: 'airflow-dags-dr'
+      run: |
+        echo "$GCP_SA_KEY" > /tmp/key.json
+        sudo apt-get update && sudo apt-get install -y google-cloud-sdk
+        gcloud auth activate-service-account --key-file=/tmp/key.json
+        gsutil cp target/*.jar gs://$BUCKET_NAME/
